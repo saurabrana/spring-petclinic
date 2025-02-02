@@ -1,34 +1,54 @@
 {
     "alerts": [
         {
-            "name": "High Error Rate",
-            "description": "Monitors the error rate in the application to identify potential issues early.",
-            "query": "SELECT count(*) FROM Transaction WHERE error IS true",
-            "duration": "5",
+            "name": "Runtime Exception Triggered",
+            "description": "Alert for instances where the CrashController triggers an exception.",
+            "query": "SELECT count(*) FROM Log WHERE message LIKE '%controller used to showcase what happens when an exception is thrown%'",
             "operator": "above",
+            "duration": "5",
+            "threshold": "10",
+            "priority": "critical",
+            "rationale": "Repeated runtime exceptions indicate a need for immediate attention to application stability."
+        },
+        {
+            "name": "High Cache Miss Rate",
+            "description": "Monitors cache misses which may degrade performance if the service frequently pulls from the database.",
+            "query": "SELECT count(*) FROM CacheMiss WHERE serviceName = 'VetService'",
+            "operator": "above",
+            "duration": "10",
+            "threshold": "50",
+            "priority": "warning",
+            "rationale": "A high cache miss rate can lead to increased response times and load on the database."
+        },
+        {
+            "name": "Database Connection Failures",
+            "description": "Tracks failure in connecting to the database, which could indicate resource or configuration issues.",
+            "query": "SELECT count(*) FROM Log WHERE message LIKE '%Failed to connect to database%'",
+            "operator": "above",
+            "duration": "5",
             "threshold": "5",
             "priority": "critical",
-            "rationale": "An error rate above 5% may indicate systemic issues that need immediate attention[0]."
+            "rationale": "Continuous database connection failures can result in service downtime and degraded performance."
         },
         {
-            "name": "Integration Test Failure",
-            "description": "Monitors failures in integration tests, particularly for exception handling and resource access.",
-            "query": "SELECT count(*) FROM TestResults WHERE status = 'FAILURE'",
-            "duration": "10",
+            "name": "Application Error Rate",
+            "description": "Monitors the overall error rate to identify systemic issues.",
+            "query": "SELECT percentage(count(*), WHERE level = 'ERROR') FROM Log WHERE appName = 'PetClinic'",
             "operator": "above",
-            "threshold": "0",
+            "duration": "5",
+            "threshold": "5",
             "priority": "critical",
-            "rationale": "Frequent test failures might indicate critical failures in service logic, which can affect uptime[1][2]."
+            "rationale": "An error rate above 5% indicates recurring issues that need attention to prevent user impact."
         },
         {
-            "name": "Unhandled Exception Alert",
-            "description": "Alert on occurrences of unhandled exceptions within the service endpoints.",
-            "query": "SELECT count(*) FROM Exception WHERE handler = 'NONE'",
-            "duration": "2",
+            "name": "Response Time Threshold",
+            "description": "Monitors if the response time exceeds acceptable thresholds, indicating performance degradation.",
+            "query": "SELECT average(duration) FROM Transaction WHERE appName = 'PetClinic'",
             "operator": "above",
-            "threshold": "0",
-            "priority": "warning",
-            "rationale": "Detecting routes that throw unhandled exceptions, ensuring they are appropriately logged and handled[3]."
+            "duration": "5",
+            "threshold": "500",
+            "priority": "critical",
+            "rationale": "Response times exceeding 500ms indicate possible bottleneck issues affecting user experience."
         }
     ],
     "policy_name": "PRISM PetClinic Alerts"
