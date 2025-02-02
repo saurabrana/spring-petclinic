@@ -1,35 +1,45 @@
 {
     "alerts": [
         {
-            "name": "High Error Rate",
-            "description": "Monitors the error rate in the application to identify potential issues early.",
-            "query": "SELECT count(*) FROM Transaction WHERE error IS true",
+            "name": "Exception Triggered",
+            "description": "Monitors if specific routes trigger exceptions, indicating potential code bugs or issues.",
+            "query": "SELECT count(*) FROM TransactionError WHERE appName = 'PetClinicApp' AND url = '/oups'",
             "duration": "5",
             "operator": "above",
-            "threshold": "5",
+            "threshold": "1",
             "priority": "critical",
-            "rationale": "An error rate above 5% may indicate systemic issues that need immediate attention[0]."
+            "rationale": "Any occurrence of an exception triggering this endpoint signifies a code issue that requires immediate attention to prevent application failure."
         },
         {
-            "name": "Integration Test Failure",
-            "description": "Monitors failures in integration tests, particularly for exception handling and resource access.",
-            "query": "SELECT count(*) FROM TestResults WHERE status = 'FAILURE'",
+            "name": "Database Connection Errors",
+            "description": "Monitors the application's ability to connect to the database successfully, critical for ensuring data integrity and availability.",
+            "query": "SELECT count(*) FROM TransactionError WHERE appName = 'PetClinicApp' AND error.message LIKE '%Cannot connect to database%'",
             "duration": "10",
             "operator": "above",
             "threshold": "0",
             "priority": "critical",
-            "rationale": "Frequent test failures might indicate critical failures in service logic, which can affect uptime[1][2]."
+            "rationale": "Inability to connect to the database can lead to application downtime and data inconsistency which must be fixed promptly."
         },
         {
-            "name": "Unhandled Exception Alert",
-            "description": "Alert on occurrences of unhandled exceptions within the service endpoints.",
-            "query": "SELECT count(*) FROM Exception WHERE handler = 'NONE'",
-            "duration": "2",
+            "name": "API Response Time",
+            "description": "Tracks response time of API endpoints to identify latency issues.",
+            "query": "SELECT average(duration) FROM Transaction WHERE appName = 'PetClinicApp'",
+            "duration": "5",
             "operator": "above",
-            "threshold": "0",
+            "threshold": "200",
             "priority": "warning",
-            "rationale": "Detecting routes that throw unhandled exceptions, ensuring they are appropriately logged and handled[3]."
+            "rationale": "Elevated response times could degrade user experience, indicating the need for performance tuning."
+        },
+        {
+            "name": "HTTP 5xx Errors",
+            "description": "Tracks server-side error statuses to catch potential backend issues.",
+            "query": "SELECT percentage(count(*), WHERE httpResponseCode LIKE '5%') FROM Transaction WHERE appName = 'PetClinicApp'",
+            "duration": "5",
+            "operator": "above",
+            "threshold": "2",
+            "priority": "critical",
+            "rationale": "Frequent server errors indicate failing business logic or insufficient handling of edge cases that could lead to system crashes."
         }
     ],
-    "policy_name": "PRISM PetClinic Alerts"
+    "policy_name": "PRISM:saurabrana/spring-petclinicAlerts"
 }
