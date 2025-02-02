@@ -1,0 +1,45 @@
+{
+    "alerts": [
+        {
+            "name": "High Error Rate",
+            "description": "Tracks the error rate of the application to detect spikes that could indicate systemic issues.",
+            "query": "SELECT percentage(count(*), WHERE error IS true) FROM Transaction WHERE appName = 'PetClinic'",
+            "duration": "5",
+            "operator": "above",
+            "threshold": "5",
+            "priority": "critical",
+            "rationale": "An error rate above 5% suggests recurring issues that could escalate into significant system failures if not addressed."
+        },
+        {
+            "name": "Database Connection Pool Exhaustion",
+            "description": "Monitors the usage of database connection pools to prevent exhaustion which could lead to service unavailability.",
+            "query": "SELECT max(currentActive) FROM Transaction WHERE appName = 'PetClinic' AND action = 'dbQuery'",
+            "duration": "5",
+            "operator": "above",
+            "threshold": "80",
+            "priority": "warning",
+            "rationale": "Excessive database connection usage could indicate inefficient use of resources, eventually leading to service degradation."
+        },
+        {
+            "name": "Unexpected Exception Rate",
+            "description": "Detects any unexpected runtime exceptions thrown by the application which are logged.",
+            "query": "SELECT count(*) FROM Log WHERE appName = 'PetClinic' AND message LIKE '%Unexpected: controller used to showcase what happens%'",
+            "duration": "10",
+            "operator": "above",
+            "threshold": "10",
+            "priority": "critical",
+            "rationale": "High rates of unexpected exceptions indicate critical failures in logic that need immediate attention to fix potential application vulnerabilities."
+        },
+        {
+            "name": "Owner Search Latency",
+            "description": "Monitors the latency of owner search operations to ensure they remain within acceptable bounds.",
+            "query": "SELECT average(duration) FROM Transaction WHERE appName = 'PetClinic' AND transactionType = 'OwnerSearch'",
+            "duration": "5",
+            "operator": "above",
+            "threshold": "200",
+            "priority": "warning",
+            "rationale": "Increased latency on owner search operations may affect user satisfaction and indicate performance bottlenecks."
+        }
+    ],
+    "policy_name": "PRISM PetClinic Alerts"
+}
