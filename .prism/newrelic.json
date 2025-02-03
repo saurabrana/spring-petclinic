@@ -1,35 +1,55 @@
 {
     "alerts": [
         {
-            "name": "High Error Rate",
-            "description": "Monitors the error rate in the application to identify potential issues early.",
-            "query": "SELECT count(*) FROM Transaction WHERE error IS true",
+            "name": "Internal Server Error Occurrence",
+            "description": "Detects occurrences of internal server errors within the application, indicating potentially unhandled exceptions.",
+            "query": "SELECT count(*) FROM Transaction WHERE appName = 'PetClinicApp' AND error.message = 'INTERNAL_SERVER_ERROR'",
+            "duration": "5",
+            "operator": "above",
+            "threshold": "1",
+            "priority": "critical",
+            "rationale": "Sudden spikes or consistent occurrences of internal server errors may indicate uncaught exceptions or critical failures requiring immediate developer attention."
+        },
+        {
+            "name": "Owner Not Found",
+            "description": "Monitors errors when an owner ID is not found in the database, suggesting potential issues with the owner data.",
+            "query": "SELECT count(*) FROM Error WHERE message LIKE 'Owner not found with id%' AND appName = 'PetClinicApp'",
             "duration": "5",
             "operator": "above",
             "threshold": "5",
-            "priority": "critical",
-            "rationale": "An error rate above 5% may indicate systemic issues that need immediate attention[0]."
+            "priority": "warning",
+            "rationale": "Occurrences of this error may indicate synchronization issues between the application and the database, possibly affecting user operations related to owner data."
         },
         {
-            "name": "Integration Test Failure",
-            "description": "Monitors failures in integration tests, particularly for exception handling and resource access.",
-            "query": "SELECT count(*) FROM TestResults WHERE status = 'FAILURE'",
+            "name": "Database Connection Loss",
+            "description": "Tracks occurrences of database connection loss which could affect application performance and user experience.",
+            "query": "SELECT count(*) FROM Error WHERE message LIKE 'Database connection lost%' AND appName = 'PetClinicApp'",
             "duration": "10",
             "operator": "above",
-            "threshold": "0",
+            "threshold": "3",
             "priority": "critical",
-            "rationale": "Frequent test failures might indicate critical failures in service logic, which can affect uptime[1][2]."
+            "rationale": "Frequent database connection losses can significantly degrade service availability and data integrity, requiring urgent investigation."
         },
         {
-            "name": "Unhandled Exception Alert",
-            "description": "Alert on occurrences of unhandled exceptions within the service endpoints.",
-            "query": "SELECT count(*) FROM Exception WHERE handler = 'NONE'",
-            "duration": "2",
+            "name": "High Database Response Time",
+            "description": "Checks if the database response time exceeds the expected threshold, indicating potential performance issues.",
+            "query": "SELECT average(responseTime) FROM Database WHERE appName = 'PetClinicApp'",
+            "duration": "10",
             "operator": "above",
-            "threshold": "0",
+            "threshold": "200",
+            "priority": "critical",
+            "rationale": "Higher response times can lead to application slowdowns affecting the overall user experience and efficiency."
+        },
+        {
+            "name": "Page Not Found Errors",
+            "description": "Monitors the frequency of 404 errors to identify possible broken links or incorrect URLs within the application.",
+            "query": "SELECT count(*) FROM Transaction WHERE error.message = '404 NOT FOUND' AND appName = 'PetClinicApp'",
+            "duration": "10",
+            "operator": "above",
+            "threshold": "10",
             "priority": "warning",
-            "rationale": "Detecting routes that throw unhandled exceptions, ensuring they are appropriately logged and handled[3]."
+            "rationale": "An increase in Page Not Found errors can indicate issues in navigation or dead links, impacting user experience and accessibility."
         }
     ],
-    "policy_name": "PRISM PetClinic Alerts"
+    "policy_name": "PRISM:saurabrana/spring-petclinicAlerts"
 }
